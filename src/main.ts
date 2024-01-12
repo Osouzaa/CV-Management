@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import * as cors from 'cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,6 +23,8 @@ async function bootstrap() {
   app.setGlobalPrefix('v1/');
 
   app.useGlobalPipes(new ValidationPipe());
+
+  app.use(cors());
 
   await app.listen(configService.get('APP_PORT') || 3003);
 }

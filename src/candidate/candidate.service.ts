@@ -8,7 +8,7 @@ import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Candidate } from 'src/database/entities/candidate.entity';
-import { In, Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CandidateService {
@@ -60,17 +60,6 @@ export class CandidateService {
     try {
       const candidateFound = await this.candidateRepository.findOne({
         where: { id },
-        select: [
-          'cpf',
-          'avaliado',
-          'cidade',
-          'createdAt',
-          'id',
-          'idade',
-          'nome',
-          'updateAt',
-          'habilidades',
-        ],
       });
       if (!candidateFound) {
         throw new NotFoundException('Candidato nao encotrado.');
@@ -102,19 +91,19 @@ export class CandidateService {
     }
   }
 
-  async findBySkill(skill: string): Promise<Candidate[]> {
-    try {
-      const candidates = await this.candidateRepository.find({
-        where: {
-          habilidades: Like(`%${skill}%`),
-        },
-      });
+  // async findBySkill(skill: string): Promise<Candidate[]> {
+  //   try {
+  //     const candidates = await this.candidateRepository.find({
+  //       where: {
+  //         habilidades: Like(`%${skill}%`),
+  //       },
+  //     });
 
-      return candidates;
-    } catch (error) {
-      throw new Error('Erro ao buscar candidatos por habilidade');
-    }
-  }
+  //     return candidates;
+  //   } catch (error) {
+  //     throw new Error('Erro ao buscar candidatos por habilidade');
+  //   }
+  // }
 
   async update(id: number, updateCandidateDto: UpdateCandidateDto) {
     try {

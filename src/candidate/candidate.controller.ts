@@ -31,11 +31,11 @@ export class CandidateController {
     return this.candidateService.findOne(+id);
   }
 
-  @Get('/skills/:skill')
-  async getCandidatesBySkill(@Param('skill') skill: string) {
-    const candidates = await this.candidateService.findBySkill(skill);
-    return candidates;
-  }
+  // @Get('/skills/:skill')
+  // async getCandidatesBySkill(@Param('skill') skill: string) {
+  //   const candidates = await this.candidateService.findBySkill(skill);
+  //   return candidates;
+  // }
 
   @Patch(':id')
   update(

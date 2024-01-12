@@ -1,10 +1,52 @@
+import {  IsNotEmpty, IsString } from 'class-validator';
+
 export class CreateCandidateDto {
-  id: number;
+  @IsString()
+  profissional: string;
+
+  @IsString()
+  idade: string;
+
+  @IsString()
+  status: string;
+
+  @IsNotEmpty({message: "O campo de CPF não pode estar vazio"})
+  @IsString()
   cpf: string;
-  nome: string;
-  habilidades: string;
-  idade: number;
+
+  @IsString()
+  telefone: string;
+
+  @IsString()
   cidade: string;
-  estado: string;
-  avaliado?: boolean;
+
+  @IsString()
+  email: string;
+
+  @IsString()
+  vaga_100_presencial_porto_real_rj: string;
+
+  @IsString()
+  vaga_100_presencial_goiana_pe: string;
+
+  @IsString()
+  vaga_100_presencial_betim_mg: string;
+
+  @IsString()
+  vaga_hibrida_betim: string;
+
+  @IsString()
+  home_office: string;
+
+  @IsString()
+  ultima_empresa: string;
+
+  @IsString()
+  ultimo_salario: string;
+
+  @IsString()
+  target_clt: string;
+
+  @IsString()
+  conhecimento_ingles: string;
 }
