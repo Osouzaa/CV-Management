@@ -64,4 +64,8 @@ export class CreateCandidateDto {
   @IsNotEmpty({ message: "O campo conhecimento de inglês não pode estar vazio" })
   @IsString()
   conhecimento_ingles: string;
+
+  @IsNotEmpty({ message: "O campo conhecimento de inglês não pode estar vazio" })
+  @IsString()
+  observacao: string;
 }

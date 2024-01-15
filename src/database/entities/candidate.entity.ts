@@ -13,7 +13,7 @@ export class Candidate {
 
   @Column({ nullable: false, type: 'varchar' })
   profissional: string;
-  
+
   @Column({ nullable: false, type: 'varchar', unique: true })
   cpf: string;
 
@@ -25,7 +25,7 @@ export class Candidate {
 
   @Column({ nullable: false, type: 'varchar' })
   telefone: string;
-  
+
   @Column({ nullable: false, type: 'varchar' })
   cidade: string;
 
@@ -46,7 +46,7 @@ export class Candidate {
 
   @Column({ nullable: false, type: 'varchar' })
   vaga_100_presencial_porto_real_rj: string;
-  
+
   @Column({ nullable: false, type: 'varchar' })
   vaga_100_presencial_goiana_pe: string;
 
@@ -55,10 +55,12 @@ export class Candidate {
 
   @Column({ nullable: false, type: 'varchar' })
   vaga_hibrida_betim: string;
-   
+
   @Column({ nullable: false, type: 'varchar' })
   home_office: string;
 
+  @Column({ nullable: false, type: 'varchar' })
+  observacao: string;
 
   @CreateDateColumn()
   createdAt: Date;
