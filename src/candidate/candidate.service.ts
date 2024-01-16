@@ -5,33 +5,63 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
-import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Candidate } from 'src/database/entities/candidate.entity';
 import { Repository } from 'typeorm';
+import * as path from 'path';
+import { promises as fsPromises } from 'fs';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class CandidateService {
   constructor(
     @InjectRepository(Candidate)
     private candidateRepository: Repository<Candidate>,
+    private fileService: FilesService,
   ) {}
 
-  async create(createCandidateDto: CreateCandidateDto) {
+  async create(
+    createCandidateDto: CreateCandidateDto,
+    curriculo: Express.Multer.File,
+  ) {
     try {
       if (await this.findByCpf(createCandidateDto.cpf)) {
         throw new BadRequestException('Candidato já registrado');
       }
 
-      const newCandidate = this.candidateRepository.create(createCandidateDto);
-      await this.candidateRepository.save(newCandidate);
-      return newCandidate;
+      const file = await this.uploadCv(curriculo, curriculo.buffer);
+
+      const tempCandidate = this.candidateRepository.create({
+        ...createCandidateDto,
+        curriculo: file,
+      });
+
+      const candidate = await this.candidateRepository.save(tempCandidate);
+     
+      return candidate;
     } catch (error) {
       throw new HttpException(
         error.message || 'Internal server error',
         error.statusCode || 500,
       );
     }
+  }
+
+  async uploadCv(file: Express.Multer.File, fileBuffer: Buffer) {
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException('Arquivo muito grande');
+    }
+
+    const fileName = `${
+      Date.now() + '-' + Math.round(Math.random() * 1e9)
+    }.${file.originalname.split('.').pop()}`;
+
+    const uploadPath = path.join(__dirname, '../../src/uploads', fileName);
+
+    await fsPromises.writeFile(uploadPath, fileBuffer);
+
+    return await this.fileService.create(fileName);
   }
 
   async findByCpf(cpf: string) {
@@ -105,26 +135,26 @@ export class CandidateService {
   //   }
   // }
 
-  async update(id: number, updateCandidateDto: UpdateCandidateDto) {
-    try {
-      await this.findOne(id);
+  // async update(id: number, updateCandidateDto: UpdateCandidateDto) {
+  //   try {
+  //     await this.findOne(id);
 
-      const tempAffected = this.candidateRepository.create(updateCandidateDto);
+  //     const tempAffected = this.candidateRepository.create(updateCandidateDto);
 
-      const affected = await this.candidateRepository.update(id, tempAffected);
+  //     const affected = await this.candidateRepository.update(id, tempAffected);
 
-      if (!affected) {
-        throw new HttpException('Algo deu errado com a atualização.', 400);
-      }
+  //     if (!affected) {
+  //       throw new HttpException('Algo deu errado com a atualização.', 400);
+  //     }
 
-      return await this.findById(id);
-    } catch (error) {
-      throw new HttpException(
-        error.message || 'Internal server error',
-        error.status || 500,
-      );
-    }
-  }
+  //     return await this.findById(id);
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       error.message || 'Internal server error',
+  //       error.status || 500,
+  //     );
+  //   }
+  // }
 
   remove(id: number) {
     return `This action removes a #${id} candidate`;
