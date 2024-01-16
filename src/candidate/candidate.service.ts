@@ -29,7 +29,11 @@ export class CandidateService {
         throw new BadRequestException('Candidato já registrado');
       }
 
-      const file = await this.uploadCv(curriculo, curriculo.buffer);
+      const file = await this.uploadCv(
+        curriculo,
+        curriculo.buffer,
+        createCandidateDto,
+      );
 
       const tempCandidate = this.candidateRepository.create({
         ...createCandidateDto,
@@ -37,7 +41,7 @@ export class CandidateService {
       });
 
       const candidate = await this.candidateRepository.save(tempCandidate);
-     
+
       return candidate;
     } catch (error) {
       throw new HttpException(
@@ -47,15 +51,19 @@ export class CandidateService {
     }
   }
 
-  async uploadCv(file: Express.Multer.File, fileBuffer: Buffer) {
+  async uploadCv(
+    file: Express.Multer.File,
+    fileBuffer: Buffer,
+    createCandidateDto: CreateCandidateDto,
+  ) {
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       throw new BadRequestException('Arquivo muito grande');
     }
 
-    const fileName = `${
-      Date.now() + '-' + Math.round(Math.random() * 1e9)
-    }.${file.originalname.split('.').pop()}`;
+    const fileName = `${createCandidateDto.profissional
+      .replace(/\s/g, '_')
+      .toLowerCase()}.pdf`;
 
     const uploadPath = path.join(__dirname, '../../src/uploads', fileName);
 

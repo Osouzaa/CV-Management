@@ -45,9 +45,10 @@ export class CandidateController {
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
         }),
     )
+    createCandidateDto: CreateCandidateDto,
     file: Express.Multer.File,
   ) {
-    return this.candidateService.uploadCv(file, file.buffer);
+    return this.candidateService.uploadCv(file, file.buffer, createCandidateDto);
   }
 
   @Get()
