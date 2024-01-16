@@ -5,20 +5,49 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
-  HttpException,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipeBuilder,
+  HttpStatus,
 } from '@nestjs/common';
 import { CandidateService } from './candidate.service';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
-import { UpdateCandidateDto } from './dto/update-candidate.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('candidate')
 export class CandidateController {
   constructor(private readonly candidateService: CandidateService) {}
 
   @Post()
-  create(@Body() createCandidateDto: CreateCandidateDto) {
-    return this.candidateService.create(createCandidateDto);
+  @UseInterceptors(FileInterceptor('curriculo'))
+  create(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({ fileType: 'application/pdf' })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    curriculo: Express.Multer.File,
+    @Body()
+    createCandidateDto: CreateCandidateDto,
+  ) {
+    return this.candidateService.create(createCandidateDto, curriculo);
+  }
+
+  @Post('uploadCv')
+  @UseInterceptors(FileInterceptor('cv'))
+  uploadCv(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({ fileType: 'application/pdf' })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.candidateService.uploadCv(file, file.buffer);
   }
 
   @Get()
@@ -37,11 +66,11 @@ export class CandidateController {
   //   return candidates;
   // }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateCandidateDto: UpdateCandidateDto,
-  ) {
-    return this.candidateService.update(+id, updateCandidateDto);
-  }
+  // @Patch(':id')
+  // update(
+  //   @Param('id') id: string,
+  //   @Body() updateCandidateDto: UpdateCandidateDto,
+  // ) {
+  //   return this.candidateService.update(+id, updateCandidateDto);
+  // }
 }

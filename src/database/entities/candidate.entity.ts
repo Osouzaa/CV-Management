@@ -1,9 +1,12 @@
+import { File } from 'src/files/entities/file.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('candidates')
@@ -61,6 +64,10 @@ export class Candidate {
 
   @Column({ nullable: false, type: 'varchar' })
   observacao: string;
+
+  @OneToOne(() => File)
+  @JoinColumn()
+  curriculo: File
 
   @CreateDateColumn()
   createdAt: Date;
