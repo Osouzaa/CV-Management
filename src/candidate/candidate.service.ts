@@ -11,6 +11,9 @@ import { Repository } from 'typeorm';
 import * as path from 'path';
 import { promises as fsPromises } from 'fs';
 import { FilesService } from 'src/files/files.service';
+import { UpdateCandidateDto } from './dto/update-candidate.dto';
+import { QueryCandidateDto } from './dto/query-candidate.dto';
+import { differenceInYears, parse } from 'date-fns';
 
 @Injectable()
 export class CandidateService {
@@ -19,6 +22,21 @@ export class CandidateService {
     private candidateRepository: Repository<Candidate>,
     private fileService: FilesService,
   ) {}
+
+  formatarNomeProfissional(profissional: string): string {
+    const codigoFormatado = profissional
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase())
+      .join('');
+    return codigoFormatado;
+  }
+
+  private CalculcarIdade = (data_de_nascimento: string) => {
+    const dataNascimento = parse(data_de_nascimento, 'yyyy-MM-dd', new Date());
+    const idade = differenceInYears(new Date(), dataNascimento);
+
+    return idade;
+  };
 
   async create(
     createCandidateDto: CreateCandidateDto,
@@ -29,15 +47,35 @@ export class CandidateService {
         throw new BadRequestException('Candidato já registrado');
       }
 
+      const codigoCandidate = this.formatarNomeProfissional(
+        createCandidateDto.profissional,
+      );
+
+      const currentDate = new Date();
+      const formattedDate = `${currentDate.getDate()}/${
+        currentDate.getMonth() + 1
+      }/${currentDate.getFullYear()}`;
+
+      const observacaoDate = `[${formattedDate}] - ${createCandidateDto.observacao}`;
+
       const file = await this.uploadCv(
         curriculo,
         curriculo.buffer,
         createCandidateDto,
+        codigoCandidate,
       );
+
+      const resultAge = this.CalculcarIdade(
+        createCandidateDto.data_de_nascimento,
+      );
+
 
       const tempCandidate = this.candidateRepository.create({
         ...createCandidateDto,
         curriculo: file,
+        idade: resultAge,
+        codigoCandidate,
+        observacao: observacaoDate
       });
 
       const candidate = await this.candidateRepository.save(tempCandidate);
@@ -45,7 +83,7 @@ export class CandidateService {
       return candidate;
     } catch (error) {
       throw new HttpException(
-        error.message || 'Internal server error',
+        error.message || 'Erro interno no servidor',
         error.statusCode || 500,
       );
     }
@@ -55,21 +93,29 @@ export class CandidateService {
     file: Express.Multer.File,
     fileBuffer: Buffer,
     createCandidateDto: CreateCandidateDto,
+    codigoCandidate?: string,
   ) {
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      throw new BadRequestException('Arquivo muito grande');
+    try {
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        throw new BadRequestException('Arquivo muito grande');
+      }
+  
+      const fileName = `${createCandidateDto.profissional
+        .replace(/\s/g, '_')
+        .toLowerCase()}_${codigoCandidate}.pdf`;
+  
+      const uploadPath = path.join(__dirname, '../../src/uploads', fileName);
+  
+      await fsPromises.writeFile(uploadPath, fileBuffer);
+  
+      return await this.fileService.create(fileName);
+    }catch (error) {
+      const errorMessage = error.message || 'Erro interno no servidor';
+      const statusCode = error.statusCode || 500;
+      throw new HttpException(errorMessage, statusCode);
     }
-
-    const fileName = `${createCandidateDto.profissional
-      .replace(/\s/g, '_')
-      .toLowerCase()}.pdf`;
-
-    const uploadPath = path.join(__dirname, '../../src/uploads', fileName);
-
-    await fsPromises.writeFile(uploadPath, fileBuffer);
-
-    return await this.fileService.create(fileName);
+    
   }
 
   async findByCpf(cpf: string) {
@@ -83,9 +129,23 @@ export class CandidateService {
     }
   }
 
-  async findAll() {
+  async findAll(query?: QueryCandidateDto) {
     try {
-      return this.candidateRepository.find();
+      let options: any = {};
+      if (query && query.idade) {
+        options = {
+          where: { idade: query.idade },
+          relations: ['curriculo'],
+        };
+      } else {
+        options = {
+          relations: ['curriculo'],
+        };
+      }
+
+      const candidates = await this.candidateRepository.find(options);
+
+      return candidates;
     } catch (error) {
       throw new HttpException(
         error.message || 'Internal server error',
@@ -143,26 +203,26 @@ export class CandidateService {
   //   }
   // }
 
-  // async update(id: number, updateCandidateDto: UpdateCandidateDto) {
-  //   try {
-  //     await this.findOne(id);
+  async update(id: number, updateCandidateDto: UpdateCandidateDto) {
+    try {
+      await this.findOne(id);
 
-  //     const tempAffected = this.candidateRepository.create(updateCandidateDto);
+      const tempAffected = this.candidateRepository.create(updateCandidateDto);
 
-  //     const affected = await this.candidateRepository.update(id, tempAffected);
+      const affected = await this.candidateRepository.update(id, tempAffected);
 
-  //     if (!affected) {
-  //       throw new HttpException('Algo deu errado com a atualização.', 400);
-  //     }
+      if (!affected) {
+        throw new HttpException('Algo deu errado com a atualização.', 400);
+      }
 
-  //     return await this.findById(id);
-  //   } catch (error) {
-  //     throw new HttpException(
-  //       error.message || 'Internal server error',
-  //       error.status || 500,
-  //     );
-  //   }
-  // }
+      return await this.findById(id);
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Internal server error',
+        error.status || 500,
+      );
+    }
+  }
 
   remove(id: number) {
     return `This action removes a #${id} candidate`;

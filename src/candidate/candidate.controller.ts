@@ -9,10 +9,14 @@ import {
   UploadedFile,
   ParseFilePipeBuilder,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { CandidateService } from './candidate.service';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateCandidateDto } from './dto/update-candidate.dto';
+import { QueryCandidateDto } from './dto/query-candidate.dto';
+import { Candidate } from 'src/database/entities/candidate.entity';
 
 @Controller('candidate')
 export class CandidateController {
@@ -37,7 +41,7 @@ export class CandidateController {
 
   @Post('uploadCv')
   @UseInterceptors(FileInterceptor('cv'))
-  uploadCv(
+  async uploadCv(
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({ fileType: 'application/pdf' })
@@ -48,12 +52,16 @@ export class CandidateController {
     createCandidateDto: CreateCandidateDto,
     file: Express.Multer.File,
   ) {
-    return this.candidateService.uploadCv(file, file.buffer, createCandidateDto);
+    return this.candidateService.uploadCv(
+      file,
+      file.buffer,
+      createCandidateDto,
+    );
   }
 
   @Get()
-  findAll() {
-    return this.candidateService.findAll();
+  async findAll(@Query() query?: QueryCandidateDto): Promise<Candidate[]> {
+    return this.candidateService.findAll(query);
   }
 
   @Get(':id')
@@ -67,11 +75,11 @@ export class CandidateController {
   //   return candidates;
   // }
 
-  // @Patch(':id')
-  // update(
-  //   @Param('id') id: string,
-  //   @Body() updateCandidateDto: UpdateCandidateDto,
-  // ) {
-  //   return this.candidateService.update(+id, updateCandidateDto);
-  // }
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateCandidateDto: UpdateCandidateDto,
+  ) {
+    return this.candidateService.update(+id, updateCandidateDto);
+  }
 }
