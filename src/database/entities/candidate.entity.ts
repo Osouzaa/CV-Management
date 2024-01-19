@@ -17,35 +17,85 @@ export class Candidate {
   @Column({ nullable: false, type: 'varchar' })
   profissional: string;
 
+  @Column({ nullable: true, type: 'varchar' })
+  codigoCandidate: string;
+
+  @Column({ nullable: false, type: 'date' })
+  data_de_nascimento: string;
+
+  @Column({ nullable: true, type: 'varchar' })
+  idade: number;
+
   @Column({ nullable: false, type: 'varchar', unique: true })
   cpf: string;
-
-  @Column({ nullable: false, type: 'varchar' })
-  idade: string;
-
-  @Column({ nullable: false, type: 'varchar' })
-  status: string;
-
-  @Column({ nullable: false, type: 'varchar' })
-  telefone: string;
 
   @Column({ nullable: false, type: 'varchar' })
   cidade: string;
 
   @Column({ nullable: false, type: 'varchar' })
+  uf: string;
+
+  @Column({ nullable: false, type: 'varchar' })
+  telefone: string;
+
+  @Column({ nullable: false, type: 'varchar' })
   email: string;
+
+  //  Page  
+
+
+  @Column({ nullable: false, type: 'varchar' })
+  esta_empregado: string;
+
+  @Column({nullable: true, type: 'varchar'})
+  empresa_atual: string;
+
+  @Column({nullable: false, type: 'varchar'})
+  experiencia_ramo_automotivo: string;
+
+  @Column({nullable: false, type: 'varchar'})
+  modalidade_atual: string;
+
+  @Column({nullable: false, type: 'varchar'})
+  tipo_desejado_linkedin: string;
+
+  @Column({nullable: false, type: 'varchar'})
+  nivel_funcao: string;
+
+  @Column({nullable: false, type: 'varchar'})
+  formacao: string;
+
+  @Column({nullable: false, type: 'varchar'})
+  interesse_imediato: string;
+
+  //  --
+
+  @Column({nullable: false, type: 'varchar'})
+  entrevista_online: string;
+
+  @Column({nullable: false, type: 'varchar'})
+  teste_tecnico: string;
 
   @Column({ nullable: false, type: 'varchar' })
   conhecimento_ingles: string;
 
   @Column({ nullable: false, type: 'varchar' })
+  pretensao_salarial: string;
+
+  @Column({ nullable: false, type: 'varchar' })
+  pretensao_pj: string;
+
+  @Column({ nullable: false, type: 'varchar' })
+  cnpj: string;
+
+  @Column({ nullable: false, type: 'varchar' })
+  tipo_cnpj: string;
+
+  @Column({ nullable: true, type: 'varchar' })
   ultima_empresa: string;
 
-  @Column({ nullable: false, type: 'varchar' })
+  @Column({ nullable: true, type: 'varchar' })
   ultimo_salario: string;
-
-  @Column({ nullable: false, type: 'varchar' })
-  target_clt: string;
 
   @Column({ nullable: false, type: 'varchar' })
   vaga_100_presencial_porto_real_rj: string;
@@ -57,17 +107,23 @@ export class Candidate {
   vaga_100_presencial_betim_mg: string;
 
   @Column({ nullable: false, type: 'varchar' })
+  vaga_internacional: string;
+
+  @Column({ nullable: false, type: 'varchar' })
   vaga_hibrida_betim: string;
 
   @Column({ nullable: false, type: 'varchar' })
   home_office: string;
+
+  @Column({ nullable: true, type: 'varchar' })
+  status: string;
 
   @Column({ nullable: false, type: 'varchar' })
   observacao: string;
 
   @OneToOne(() => File)
   @JoinColumn()
-  curriculo: File
+  curriculo: File;
 
   @CreateDateColumn()
   createdAt: Date;
