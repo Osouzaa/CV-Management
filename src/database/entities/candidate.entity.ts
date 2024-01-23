@@ -1,4 +1,4 @@
-import { File } from 'src/files/entities/file.entity';
+import { File } from '../../database/entities/file.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
