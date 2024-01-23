@@ -5,7 +5,8 @@ import {
 } from '@nestjs/typeorm/dist';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { Candidate } from './entities/candidate.entity';
-import { File } from 'src/files/entities/file.entity';
+import { File } from './entities/file.entity';
+import { User } from './entities/user.entity';
 
 export default <TypeOrmModuleAsyncOptions>{
   imports: [ConfigModule],
@@ -21,7 +22,8 @@ export default <TypeOrmModuleAsyncOptions>{
       username: configService.get('DB_USERNAME'),
       password: configService.get('DB_PASSWORD'),
       database: configService.get('DB_DATABASE'),
-      entities: [Candidate,File],
+      entities: [Candidate,File, User],
+      ssl: [true],
       synchronize: true,
     };
   },
