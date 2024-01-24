@@ -17,6 +17,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { QueryCandidateDto } from './dto/query-candidate.dto';
 import { Candidate } from 'src/database/entities/candidate.entity';
+import { NotFoundException, Res } from '@nestjs/common';
+import { Response } from 'express';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Controller('candidate')
 export class CandidateController {
@@ -67,6 +71,46 @@ export class CandidateController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.candidateService.findOne(+id);
+  }
+  @Get(':id/download-cv')
+  async downloadCv(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const candidate = await this.candidateService.findById(+id);
+
+      if (!candidate || !candidate.curriculo) {
+        throw new NotFoundException('Candidato ou currículo não encontrado.');
+      }
+
+      const filePath = path.join(
+        __dirname,
+        '../../src/uploads',
+        candidate.curriculo.fileName,
+      );
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename=${path.basename(filePath)}`,
+      );
+
+      // Envie o arquivo como resposta
+      const fileStream = fs.createReadStream(filePath);
+
+      // Manipule possíveis erros durante o stream
+      fileStream.on('error', (error) => {
+        console.error('Erro durante o download:', error);
+        res
+          .status(500)
+          .send({ message: 'Erro interno no servidor durante o download.' });
+      });
+
+      fileStream.pipe(res);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        res.status(404).send({ message: error.message });
+      } else {
+        res.status(500).send({ message: 'Erro interno no servidor.' });
+      }
+    }
   }
 
   // @Get('/skills/:skill')
