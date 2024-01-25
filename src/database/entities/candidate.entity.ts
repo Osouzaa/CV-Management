@@ -91,12 +91,6 @@ export class Candidate {
   @Column({ nullable: false, type: 'varchar' })
   tipo_cnpj: string;
 
-  @Column({ nullable: true, type: 'varchar' })
-  ultima_empresa: string;
-
-  @Column({ nullable: true, type: 'varchar' })
-  ultimo_salario: string;
-
   @Column({ nullable: false, type: 'varchar' })
   vaga_100_presencial_porto_real_rj: string;
 
@@ -116,10 +110,10 @@ export class Candidate {
   home_office: string;
 
   @Column({ nullable: true, type: 'varchar' })
-  status: string;
-
-  @Column({ nullable: false, type: 'varchar' })
   observacao: string;
+
+  @Column({ type: 'boolean', default: false })
+  foi_avaliado_recrutamento: boolean;
 
   @OneToOne(() => File)
   @JoinColumn()
