@@ -45,7 +45,7 @@ export class UsersService {
   async findAll() {
     try {
       return await this.usersRepository.find({
-        select: ['id', 'name', 'email', 'role'],
+        select: ['id', 'name', 'email', 'role', 'createdAt', 'registration', 'isActive',"password" ],
       });
     } catch (error) {
       console.log("error ", error)

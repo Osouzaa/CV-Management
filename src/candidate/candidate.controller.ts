@@ -126,4 +126,22 @@ export class CandidateController {
   ) {
     return this.candidateService.update(+id, updateCandidateDto);
   }
+
+  @Post('upload-excel')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadSpreadsheets(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.candidateService.uploadSpreadsheet(file);  // Certifique-se de ajustar o nome do serviço conforme necessário
+  }
 }
