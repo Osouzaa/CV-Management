@@ -14,6 +14,7 @@ import { FilesService } from 'src/files/files.service';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { QueryCandidateDto } from './dto/query-candidate.dto';
 import { differenceInYears, parse } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 @Injectable()
 export class CandidateService {
@@ -69,13 +70,12 @@ export class CandidateService {
         createCandidateDto.data_de_nascimento,
       );
 
-
       const tempCandidate = this.candidateRepository.create({
         ...createCandidateDto,
         curriculo: file,
         idade: resultAge,
         codigoCandidate,
-        observacao: observacaoDate
+        observacao: observacaoDate,
       });
 
       const candidate = await this.candidateRepository.save(tempCandidate);
@@ -100,22 +100,21 @@ export class CandidateService {
       if (file.size > maxSize) {
         throw new BadRequestException('Arquivo muito grande');
       }
-  
+
       const fileName = `${createCandidateDto.profissional
         .replace(/\s/g, '_')
         .toLowerCase()}_${codigoCandidate}.pdf`;
-  
+
       const uploadPath = path.join(__dirname, '../../src/uploads', fileName);
-  
+
       await fsPromises.writeFile(uploadPath, fileBuffer);
-  
+
       return await this.fileService.create(fileName);
-    }catch (error) {
+    } catch (error) {
       const errorMessage = error.message || 'Erro interno no servidor';
       const statusCode = error.statusCode || 500;
       throw new HttpException(errorMessage, statusCode);
     }
-    
   }
 
   async findByCpf(cpf: string) {
@@ -174,7 +173,10 @@ export class CandidateService {
 
   async findById(id: number) {
     try {
-      const user = await this.candidateRepository.findOneBy({ id });
+      const user = await this.candidateRepository.findOne({
+        where: { id },
+        relations: ['curriculo'],
+      });
 
       if (!user) {
         throw new HttpException('Candidato não encontrado.', 404);
@@ -226,5 +228,47 @@ export class CandidateService {
 
   remove(id: number) {
     return `This action removes a #${id} candidate`;
+  }
+
+  async uploadSpreadsheet(spreadsheet: Express.Multer.File) {
+    try {
+      const workbook = XLSX.read(spreadsheet.buffer);
+  
+      const result = await Promise.all(
+        workbook.SheetNames.map(async (sheetName) => {
+          const worksheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(worksheet) as any[];
+  
+          // Criar um objeto para armazenar os resultados por coluna
+          const columnResults: { [key: string]: any } = {};
+  
+          // Iterar sobre as linhas e extrair os valores das colunas
+          rows.forEach((row, rowIndex) => {
+            Object.keys(row).forEach((columnName) => {
+              // Criar a chave da coluna se não existir no objeto
+              if (!columnResults[columnName]) {
+                columnResults[columnName] = [];
+              }
+  
+              // Adicionar o valor da célula ao array correspondente à coluna
+              columnResults[columnName].push(row[columnName]);
+            });
+          });
+  
+          // Visualize os dados da planilha no console
+          console.log('Dados da planilha:', columnResults);
+  
+          return columnResults;
+        }),
+      );
+  
+      console.log('Resultado do upload:', result);
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Erro interno no servidor',
+        error.statusCode || 500,
+      );
+    }
   }
 }
