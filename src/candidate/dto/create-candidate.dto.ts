@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import {IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCandidateDto {
   @IsNotEmpty({ message: 'O campo profissional não pode estar vazio' })
@@ -90,12 +90,6 @@ export class CreateCandidateDto {
   @IsString()
   tipo_cnpj: string;
 
- 
-  ultima_empresa: string;
-
- 
-  ultimo_salario: string;
-
   @IsNotEmpty({
     message: 'O campo vaga 100% presencial Porto Real RJ não pode estar vazio',
   })
@@ -126,12 +120,9 @@ export class CreateCandidateDto {
   @IsString()
   home_office: string;
 
-  @IsNotEmpty({
-    message: 'O campo conhecimento de inglês não pode estar vazio',
-  })
-  @IsString()
+  @IsOptional()
   observacao: string;
 
-
-  status: string;
+  @IsOptional()
+  foi_avaliado_recrutamento?: boolean;
 }
