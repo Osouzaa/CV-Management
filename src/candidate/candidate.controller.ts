@@ -142,6 +142,6 @@ export class CandidateController {
     )
     file: Express.Multer.File,
   ) {
-    return this.candidateService.uploadSpreadsheet(file);  // Certifique-se de ajustar o nome do serviço conforme necessário
+    return this.candidateService.uploadSpreadsheet(file);
   }
 }
