@@ -35,6 +35,7 @@ export class CreateCandidateDto {
   @IsString()
   esta_empregado: string;
 
+  @IsOptional()
   empresa_atual: string;
 
   @IsNotEmpty({ message: 'O campo Experiencia no ramo automotivo não pode estar vazio' })
