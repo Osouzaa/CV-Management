@@ -8,18 +8,19 @@ import {
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Candidate } from 'src/database/entities/candidate.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import * as path from 'path';
 import { promises as fsPromises } from 'fs';
 import { FilesService } from 'src/files/files.service';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { QueryCandidateDto } from './dto/query-candidate.dto';
-import { differenceInYears, parse } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { formatarDataNascimento } from 'src/utils/dateUtils';
 import { formatarCPF } from 'src/utils/cpfUtils';
 import { formatarTelefone } from 'src/utils/phoneUtils';
 import { formatarDinheiro } from 'src/utils/salarioUtils';
+import { calcularIdade } from 'src/utils/idadeUtils';
+import { formatarNomeProfissional } from 'src/utils/nomeProfissional.Utils';
 
 @Injectable()
 export class CandidateService {
@@ -28,21 +29,6 @@ export class CandidateService {
     private candidateRepository: Repository<Candidate>,
     private fileService: FilesService,
   ) {}
-
-  formatarNomeProfissional(profissional: string): string {
-    const codigoFormatado = profissional
-      .split(' ')
-      .map((word) => word.charAt(0).toUpperCase())
-      .join('');
-    return codigoFormatado;
-  }
-
-  private CalculcarIdade = (data_de_nascimento: string) => {
-    const dataNascimento = parse(data_de_nascimento, 'yyyy-MM-dd', new Date());
-    const idade = differenceInYears(new Date(), dataNascimento);
-
-    return idade;
-  };
 
   async uploadSpreadsheet(spreadsheet: Express.Multer.File) {
     try {
@@ -64,36 +50,46 @@ export class CandidateService {
                 const cpfOriginal =
                   row['CPF válido ex: 000.000.000-00'].toString();
                 const cpfFormatado = formatarCPF(cpfOriginal);
-                const telefoneOriginal = row['Contato ex:.(00) 0000-0000'].toString();
+                const telefoneOriginal =
+                  row['Contato ex:.(00) 0000-0000'].toString();
                 const telefoneFormatado = formatarTelefone(telefoneOriginal);
                 const cidade = row['Cidade que reside:'];
                 const uf = row['UF:'];
-                const experiencia_ramo_automotivo = row['Experiência no segmento automotivo:'];
+                const experiencia_ramo_automotivo =
+                  row['Experiência no segmento automotivo:'];
                 const modalidade_atual = row['Modalidade Atual:'];
                 const empresa_atual = row['Nome da empresa Atual:'];
-                const tipo_desejado_linkedin =row['Tipo desejado (vagas abertas no Linkedin):'];
-                const nivel_funcao =row['Nível atual na função:'];
-                const formacao =row['Formação:'];
-                const interesse_imediato = row['Possui interesse IMEDIATO na ocupação da vaga:'];
-                const entrevista_online = row['Disponibilidade ENTREVISTA on-line:'];
-                const teste_tecnico = row['Disponibilidade TESTE TÉCNICO on-line (seg a sex). '];
-                const conhecimento_ingles = row['Nível de idioma para conversação: [Inglês]'];
-                const pretensao_salarial = row['Pretensão salarial no regime CLT. ex: 0.000,00'];
-                const salarioFormatado = formatarDinheiro(pretensao_salarial)
-                const pretensao_pj = row['Pretensão salarial no regime PJ, valor hora. ex: 00hs.'];
-                const salarioPJ = formatarDinheiro(pretensao_pj)
+                const tipo_desejado_linkedin =
+                  row['Tipo desejado (vagas abertas no Linkedin):'];
+                const nivel_funcao = row['Nível atual na função:'];
+                const formacao = row['Formação:'];
+                const interesse_imediato =
+                  row['Possui interesse IMEDIATO na ocupação da vaga:'];
+                const entrevista_online =
+                  row['Disponibilidade ENTREVISTA on-line:'];
+                const teste_tecnico =
+                  row['Disponibilidade TESTE TÉCNICO on-line (seg a sex). '];
+                const conhecimento_ingles =
+                  row['Nível de idioma para conversação: [Inglês]'];
+                const pretensao_salarial =
+                  row['Pretensão salarial no regime CLT. ex: 0.000,00'];
+                const salarioFormatado = formatarDinheiro(pretensao_salarial);
+                const pretensao_pj =
+                  row['Pretensão salarial no regime PJ, valor hora. ex: 00hs.'];
+                const salarioPJ = formatarDinheiro(pretensao_pj);
                 const cnpj = row['Possui CNPJ Ativo?'];
                 const tipo_cnpj = row['Tipo:'];
-                const vaga_100_presencial_betim_mg = row['Local: [Presencial Betim-Mg]'];
-                const vaga_100_presencial_porto_real_rj = row['Local: [Presencial Porto Real-Rj]'];
-                const vaga_100_presencial_goiana_pe = row['Local: [Presencial Goiana-Pe]'];
+                const vaga_100_presencial_betim_mg =
+                  row['Local: [Presencial Betim-Mg]'];
+                const vaga_100_presencial_porto_real_rj =
+                  row['Local: [Presencial Porto Real-Rj]'];
+                const vaga_100_presencial_goiana_pe =
+                  row['Local: [Presencial Goiana-Pe]'];
                 const home_office = row['Local: [Home Office]'];
                 const vaga_internacional = row['Local: [Internacional]'];
-                const observacao = row['Observação:']
+                const observacao = row['Observação:'];
 
-
-
-                const candidateData: CreateCandidateDto  = {
+                const candidateData: CreateCandidateDto = {
                   profissional,
                   email,
                   data_de_nascimento: dataNascimentoFormatada,
@@ -121,13 +117,12 @@ export class CandidateService {
                   home_office,
                   vaga_internacional,
                   observacao,
-                  esta_empregado: 'Não',  
-                  vaga_hibrida_betim: 'Não',  
+                  esta_empregado: 'Não',
+                  vaga_hibrida_betim: 'Não',
                 };
                 const candidate = await this.create(candidateData);
                 return { candidate, success: true };
               } catch (error) {
-                console.error('ERROR ', error)
                 return { row, error, success: false };
               }
             }),
@@ -138,7 +133,6 @@ export class CandidateService {
       );
       return result;
     } catch (error) {
-    
       throw new HttpException(
         error.message || 'Erro interno no servidor',
         error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
@@ -155,7 +149,7 @@ export class CandidateService {
         throw new BadRequestException('Candidato já registrado');
       }
 
-      const codigoCandidate = this.formatarNomeProfissional(
+      const codigoCandidate = formatarNomeProfissional(
         createCandidateDto.profissional,
       );
 
@@ -166,25 +160,25 @@ export class CandidateService {
 
       const observacaoDate = `[${formattedDate}] - ${createCandidateDto.observacao}`;
 
-      const file = curriculo ? await this.uploadCv(
-        curriculo,
-        curriculo.buffer,  // Acesse 'buffer' somente se 'curriculo' estiver definido
-        createCandidateDto,
-        codigoCandidate,
-      ) : null;  // Caso 'curriculo' seja indefinido, 'file' também será nulo
-      
-      const resultAge = this.CalculcarIdade(
-        createCandidateDto.data_de_nascimento,
-      );
-      
+      const file = curriculo
+        ? await this.uploadCv(
+            curriculo,
+            curriculo.buffer, // Acesse 'buffer' somente se 'curriculo' estiver definido
+            createCandidateDto,
+            codigoCandidate,
+          )
+        : null; // Caso 'curriculo' seja indefinido, 'file' também será nulo
+
+      const resultAge = calcularIdade(createCandidateDto.data_de_nascimento);
+
       const tempCandidate = this.candidateRepository.create({
         ...createCandidateDto,
-        curriculo: file,  // Atribui 'file' como curriculo se 'file' não for nulo
+        curriculo: file, // Atribui 'file' como curriculo se 'file' não for nulo
         idade: resultAge,
         codigoCandidate,
         observacao: observacaoDate,
       });
-      
+
       const candidate = await this.candidateRepository.save(tempCandidate);
 
       return candidate;
@@ -235,30 +229,52 @@ export class CandidateService {
     }
   }
 
-  async findAll(query?: QueryCandidateDto) {
+  async findAll(query?: QueryCandidateDto): Promise<Candidate[]> {
     try {
-      let options: any = {};
-      if (query && query.idade) {
-        options = {
-          where: { idade: query.idade },
-          relations: ['curriculo'],
-        };
-      } else {
-        options = {
-          relations: ['curriculo'],
-        };
+      const commonOptions = {
+        relations: ['curriculo'],
+      };
+
+      let whereConditions: any = {};
+
+      if (query) {
+        for (const key in query) {
+          if (query.hasOwnProperty(key) && query[key]) {
+            if (key === 'minIdade') {
+              whereConditions.idade = whereConditions.idade || {};
+              whereConditions.idade['$gte'] = Number(query.minIdade);
+            } else if (key === 'maxIdade') {
+              whereConditions.idade = whereConditions.idade || {};
+              whereConditions.idade['$lte'] = Number(query.maxIdade);
+            } else {
+              whereConditions[key] = query[key];
+            }
+          }
+        }
+
+        if (query.minIdade && query.maxIdade) {
+          whereConditions.idade = whereConditions.idade || {};
+          whereConditions.idade = Between(
+            Number(query.minIdade),
+            Number(query.maxIdade),
+          );
+        }
       }
 
-      const candidates = await this.candidateRepository.find(options);
-
-      return candidates;
+      return this.candidateRepository.find({
+        ...commonOptions,
+        where: whereConditions,
+      });
     } catch (error) {
       throw new HttpException(
-        error.message || 'Internal server error',
-        error.status || 500,
+        error.message || 'Erro interno no servidor',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+
+
+
 
   async findOne(id: number) {
     try {
