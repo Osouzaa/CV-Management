@@ -15,7 +15,6 @@ export class QueryCandidateDto {
   home_office?: string;
   ultima_empresa?: string;
   ultimo_salario?: string;
-  pretensao_salarial?: string;
   conhecimento_ingles?: string;
   observacao?: string;
   cnpj?: string;
@@ -32,4 +31,10 @@ export class QueryCandidateDto {
   pretensao_pj?: string;
   tipo_cnpj?: string;
   foi_avaliado_recrutamento?: boolean;
+
+  minPretensaoSalarial?: string;
+  maxPretensaoSalarial?: string;
+
+  minPretensaoPJ?:string;
+  maxPretensaoPJ?:string;
 }

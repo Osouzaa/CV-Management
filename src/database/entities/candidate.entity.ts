@@ -79,11 +79,11 @@ export class Candidate {
   @Column({ nullable: false, type: 'varchar' })
   conhecimento_ingles: string;
 
-  @Column({ nullable: false, type: 'varchar' })
-  pretensao_salarial: string;
+  @Column({ nullable: false,  })
+  pretensao_salarial: number;
 
-  @Column({ nullable: false, type: 'varchar' })
-  pretensao_pj: string;
+  @Column({ nullable: false, })
+  pretensao_pj: number;
 
   @Column({ nullable: false, type: 'varchar' })
   cnpj: string;

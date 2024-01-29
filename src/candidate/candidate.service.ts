@@ -107,8 +107,8 @@ export class CandidateService {
                   entrevista_online,
                   teste_tecnico,
                   conhecimento_ingles,
-                  pretensao_salarial: salarioFormatado,
-                  pretensao_pj: salarioPJ,
+                  pretensao_salarial,
+                  pretensao_pj,
                   cnpj,
                   tipo_cnpj,
                   vaga_100_presencial_betim_mg,
@@ -246,6 +246,28 @@ export class CandidateService {
             } else if (key === 'maxIdade') {
               whereConditions.idade = whereConditions.idade || {};
               whereConditions.idade['$lte'] = Number(query.maxIdade);
+            } else if (key === 'minPretensaoSalarial') {
+              whereConditions.pretensaoSalarial =
+                whereConditions.pretensaoSalarial || {};
+              whereConditions.pretensaoSalarial['$gte'] = Number(
+                query.minPretensaoSalarial,
+              );
+            } else if (key === 'maxPretensaoSalarial') {
+              whereConditions.pretensaoSalarial =
+                whereConditions.pretensaoSalarial || {};
+              whereConditions.pretensaoSalarial['$lte'] = Number(
+                query.maxPretensaoSalarial,
+              );
+            } else if (key === 'minPretensaoPJ') {
+              whereConditions.pretensao_pj = whereConditions.pretensao_pj || {};
+              whereConditions.pretensao_pj['$gte'] = Number(
+                query.minPretensaoPJ,
+              );
+            } else if (key === 'maxPretensaoPJ') {
+              whereConditions.pretensao_pj = whereConditions.pretensao_pj || {};
+              whereConditions.pretensao_pj['$lte'] = Number(
+                query.maxPretensaoPJ,
+              );
             } else {
               whereConditions[key] = query[key];
             }
@@ -257,6 +279,23 @@ export class CandidateService {
           whereConditions.idade = Between(
             Number(query.minIdade),
             Number(query.maxIdade),
+          );
+        }
+
+        if (query.minPretensaoSalarial && query.maxPretensaoSalarial) {
+          whereConditions.pretensaoSalarial =
+            whereConditions.pretensaoSalarial || {};
+          whereConditions.pretensaoSalarial = Between(
+            Number(query.minPretensaoSalarial),
+            Number(query.maxPretensaoSalarial),
+          );
+        }
+
+        if (query.minPretensaoPJ && query.maxPretensaoPJ) {
+          whereConditions.pretensao_pj = whereConditions.pretensao_pj || {};
+          whereConditions.pretensao_pj = Between(
+            Number(query.minPretensaoPJ),
+            Number(query.maxPretensaoPJ),
           );
         }
       }
@@ -272,9 +311,6 @@ export class CandidateService {
       );
     }
   }
-
-
-
 
   async findOne(id: number) {
     try {
