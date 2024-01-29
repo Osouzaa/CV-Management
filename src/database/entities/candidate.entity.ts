@@ -23,7 +23,7 @@ export class Candidate {
   @Column({ nullable: false, type: 'date' })
   data_de_nascimento: string;
 
-  @Column({ nullable: true, type: 'varchar' })
+  @Column({ nullable: true, type: 'int' })
   idade: number;
 
   @Column({ nullable: false, type: 'varchar', unique: true })
