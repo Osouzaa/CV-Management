@@ -247,15 +247,15 @@ export class CandidateService {
               whereConditions.idade = whereConditions.idade || {};
               whereConditions.idade['$lte'] = Number(query.maxIdade);
             } else if (key === 'minPretensaoSalarial') {
-              whereConditions.pretensaoSalarial =
-                whereConditions.pretensaoSalarial || {};
-              whereConditions.pretensaoSalarial['$gte'] = Number(
+              whereConditions.pretensao_salarial =
+                whereConditions.pretensao_salarial || {};
+              whereConditions.pretensao_salarial['$gte'] = Number(
                 query.minPretensaoSalarial,
               );
             } else if (key === 'maxPretensaoSalarial') {
-              whereConditions.pretensaoSalarial =
-                whereConditions.pretensaoSalarial || {};
-              whereConditions.pretensaoSalarial['$lte'] = Number(
+              whereConditions.pretensao_salarial =
+                whereConditions.pretensao_salarial || {};
+              whereConditions.pretensao_salarial['$lte'] = Number(
                 query.maxPretensaoSalarial,
               );
             } else if (key === 'minPretensaoPJ') {
@@ -283,9 +283,9 @@ export class CandidateService {
         }
 
         if (query.minPretensaoSalarial && query.maxPretensaoSalarial) {
-          whereConditions.pretensaoSalarial =
-            whereConditions.pretensaoSalarial || {};
-          whereConditions.pretensaoSalarial = Between(
+          whereConditions.pretensao_salarial =
+            whereConditions.pretensao_salarial || {};
+          whereConditions.pretensao_salarial = Between(
             Number(query.minPretensaoSalarial),
             Number(query.maxPretensaoSalarial),
           );
