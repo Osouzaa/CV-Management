@@ -76,11 +76,9 @@ export class CreateCandidateDto {
   conhecimento_ingles: string;
 
   @IsNotEmpty({ message: 'O campo de pretensão salarial não pode estar vazio' })
-  @IsString()
   pretensao_salarial: number;
 
   @IsNotEmpty({ message: 'O campo de pretensão salarial não pode estar vazio' })
-  @IsString()
   pretensao_pj: number;
 
   @IsNotEmpty({ message: 'O campo de CNPJ não pode estar vazio' })
