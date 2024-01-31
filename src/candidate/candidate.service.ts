@@ -286,9 +286,7 @@ export class CandidateService {
           const candidates = await queryBuilder.getMany();
   
           queries.push(Promise.resolve(candidates));
-        } else {
-          console.log('Nenhum nível de conhecimento de inglês fornecido.');
-        }
+        } 
 
         if (query.minPretensaoSalarial && query.maxPretensaoSalarial) {
           queries.push(
