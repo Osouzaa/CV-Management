@@ -8,7 +8,7 @@ import {
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Candidate } from 'src/database/entities/candidate.entity';
-import { Between, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import * as path from 'path';
 import { promises as fsPromises } from 'fs';
 import { FilesService } from 'src/files/files.service';
@@ -18,7 +18,6 @@ import * as XLSX from 'xlsx';
 import { formatarDataNascimento } from 'src/utils/dateUtils';
 import { formatarCPF } from 'src/utils/cpfUtils';
 import { formatarTelefone } from 'src/utils/phoneUtils';
-import { formatarDinheiro } from 'src/utils/salarioUtils';
 import { calcularIdade } from 'src/utils/idadeUtils';
 import { formatarNomeProfissional } from 'src/utils/nomeProfissional.Utils';
 
@@ -42,52 +41,77 @@ export class CandidateService {
           const uploadResults = await Promise.all(
             rows.map(async (row) => {
               try {
-                const profissional = row['Nome completo:'];
-                const email = row['E-mail pessoal:'];
+                console.log('Row:', row);
+                const capitalizeStrings = (obj: Record<string, string>) => {
+                  const newObj: Record<string, string> = {};
+                  for (const key in obj) {
+                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                      newObj[key] =
+                        typeof obj[key] === 'string'
+                          ? obj[key].charAt(0).toUpperCase() +
+                            obj[key].slice(1).toLowerCase()
+                          : obj[key];
+                    }
+                  }
+                  return newObj;
+                };
+
+                const capitalizedRow = capitalizeStrings(row);
+
+                const profissional = capitalizedRow['Nome completo:'];
+                const email = capitalizedRow['E-mail pessoal:'];
                 const dataNascimentoFormatada = formatarDataNascimento(
                   row['Data de Nascimento:'],
                 );
                 const cpfOriginal =
-                  row['CPF válido ex: 000.000.000-00'].toString();
+                  capitalizedRow['CPF válido ex: 000.000.000-00'].toString();
                 const cpfFormatado = formatarCPF(cpfOriginal);
                 const telefoneOriginal =
-                  row['Contato ex:.(00) 0000-0000'].toString();
+                  capitalizedRow['Contato ex:.(00) 0000-0000'].toString();
                 const telefoneFormatado = formatarTelefone(telefoneOriginal);
-                const cidade = row['Cidade que reside:'];
-                const uf = row['UF:'];
+                const cidade = capitalizedRow['Cidade que reside:'];
+                const uf = capitalizedRow['UF:'].toUpperCase();
                 const experiencia_ramo_automotivo =
-                  row['Experiência no segmento automotivo:'];
-                const modalidade_atual = row['Modalidade Atual:'];
-                const empresa_atual = row['Nome da empresa Atual:'];
+                  capitalizedRow['Experiência no segmento automotivo:'];
+                const modalidade_atual = capitalizedRow['Modalidade Atual:'];
+                const empresa_atual = capitalizedRow['Nome da empresa Atual:'];
                 const tipo_desejado_linkedin =
-                  row['Tipo desejado (vagas abertas no Linkedin):'];
-                const nivel_funcao = row['Nível atual na função:'];
-                const formacao = row['Formação:'];
+                  capitalizedRow['Tipo desejado (vagas abertas no Linkedin):'];
+                const nivel_funcao = capitalizedRow['Nível atual na função:'];
+                const formacao = capitalizedRow['Formação:'];
                 const interesse_imediato =
-                  row['Possui interesse IMEDIATO na ocupação da vaga:'];
+                  capitalizedRow[
+                    'Possui interesse IMEDIATO na ocupação da vaga:'
+                  ];
                 const entrevista_online =
-                  row['Disponibilidade ENTREVISTA on-line:'];
+                  capitalizedRow['Disponibilidade ENTREVISTA on-line:'];
                 const teste_tecnico =
-                  row['Disponibilidade TESTE TÉCNICO on-line (seg a sex). '];
+                  capitalizedRow[
+                    'Disponibilidade TESTE TÉCNICO on-line (seg a sex). '
+                  ];
                 const conhecimento_ingles =
-                  row['Nível de idioma para conversação: [Inglês]'];
+                  capitalizedRow['Nível de idioma para conversação: [Inglês]'];
                 const pretensao_salarial =
                   row['Pretensão salarial no regime CLT. ex: 0.000,00'];
-                const salarioFormatado = formatarDinheiro(pretensao_salarial);
+
                 const pretensao_pj =
                   row['Pretensão salarial no regime PJ, valor hora. ex: 00hs.'];
-                const salarioPJ = formatarDinheiro(pretensao_pj);
-                const cnpj = row['Possui CNPJ Ativo?'];
-                const tipo_cnpj = row['Tipo:'];
+
+                const cnpj = capitalizedRow['Possui CNPJ Ativo?'];
+                const tipo_cnpj = capitalizedRow['Tipo:'];
                 const vaga_100_presencial_betim_mg =
-                  row['Local: [Presencial Betim-Mg]'];
+                  capitalizedRow['Local: [Presencial Betim-Mg]'];
                 const vaga_100_presencial_porto_real_rj =
-                  row['Local: [Presencial Porto Real-Rj]'];
+                  capitalizedRow['Local: [Presencial Porto Real-Rj]'];
                 const vaga_100_presencial_goiana_pe =
-                  row['Local: [Presencial Goiana-Pe]'];
-                const home_office = row['Local: [Home Office]'];
-                const vaga_internacional = row['Local: [Internacional]'];
-                const observacao = row['Observação:'];
+                  capitalizedRow['Local: [Presencial Goiana-Pe]'];
+                const home_office = capitalizedRow['Local: [Home Office]'];
+                const vaga_internacional =
+                  capitalizedRow['Local: [Internacional]'];
+                const observacao = capitalizedRow['Observação:'];
+
+                const esta_empregado = 'Não';
+                const vaga_hibrida_betim = 'Não';
 
                 const candidateData: CreateCandidateDto = {
                   profissional,
@@ -117,8 +141,8 @@ export class CandidateService {
                   home_office,
                   vaga_internacional,
                   observacao,
-                  esta_empregado: 'Não',
-                  vaga_hibrida_betim: 'Não',
+                  esta_empregado,
+                  vaga_hibrida_betim,
                 };
                 const candidate = await this.create(candidateData);
                 return { candidate, success: true };
@@ -236,75 +260,121 @@ export class CandidateService {
       };
 
       let whereConditions: any = {};
+      const queries: Promise<Candidate[]>[] = [];
 
       if (query) {
-        for (const key in query) {
-          if (query.hasOwnProperty(key) && query[key]) {
-            if (key === 'minIdade') {
-              whereConditions.idade = whereConditions.idade || {};
-              whereConditions.idade['$gte'] = Number(query.minIdade);
-            } else if (key === 'maxIdade') {
-              whereConditions.idade = whereConditions.idade || {};
-              whereConditions.idade['$lte'] = Number(query.maxIdade);
-            } else if (key === 'minPretensaoSalarial') {
-              whereConditions.pretensao_salarial =
-                whereConditions.pretensao_salarial || {};
-              whereConditions.pretensao_salarial['$gte'] = Number(
-                query.minPretensaoSalarial,
-              );
-            } else if (key === 'maxPretensaoSalarial') {
-              whereConditions.pretensao_salarial =
-                whereConditions.pretensao_salarial || {};
-              whereConditions.pretensao_salarial['$lte'] = Number(
-                query.maxPretensaoSalarial,
-              );
-            } else if (key === 'minPretensaoPJ') {
-              whereConditions.pretensao_pj = whereConditions.pretensao_pj || {};
-              whereConditions.pretensao_pj['$gte'] = Number(
-                query.minPretensaoPJ,
-              );
-            } else if (key === 'maxPretensaoPJ') {
-              whereConditions.pretensao_pj = whereConditions.pretensao_pj || {};
-              whereConditions.pretensao_pj['$lte'] = Number(
-                query.maxPretensaoPJ,
-              );
-            } else {
-              whereConditions[key] = query[key];
-            }
-          }
+        if (query && typeof query.uf === 'string') {
+          const ufSelected = query.uf.split(',').map((uf) => uf.trim());
+
+          const queryBuilder =
+            this.candidateRepository.createQueryBuilder('candidate');
+
+          const orConditions = ufSelected
+            .map((uf, index) => {
+              const paramName = `uf_${index}`;
+              queryBuilder.setParameter(paramName, uf);
+              return `candidate.uf = :${paramName}`;
+            })
+            .join(' Or ');
+            queryBuilder.where(`(${orConditions})`);
+            queryBuilder.leftJoinAndSelect('candidate.curriculo', 'curriculo')
+
+            const candidates = await queryBuilder.getMany();
+            queries.push(Promise.resolve(candidates))
         }
 
-        if (query.minIdade && query.maxIdade) {
-          whereConditions.idade = whereConditions.idade || {};
-          whereConditions.idade = Between(
-            Number(query.minIdade),
-            Number(query.maxIdade),
-          );
+        if (query && typeof query.conhecimento_ingles === 'string') {
+          const niveisDeIngles = query.conhecimento_ingles
+            .split(',')
+            .map((nivel) => nivel.trim());
+
+          // Usar createQueryBuilder para construir a consulta
+          const queryBuilder =
+            this.candidateRepository.createQueryBuilder('candidate');
+
+          // Construir as condições OR manualmente
+          const orConditions = niveisDeIngles
+            .map((level, index) => {
+              const paramName = `level_${index}`;
+              queryBuilder.setParameter(paramName, level); // Definir parâmetro
+              return `candidate.conhecimento_ingles = :${paramName}`;
+            })
+            .join(' OR ');
+
+          // Aplicar as condições OR à consulta
+          queryBuilder.where(`(${orConditions})`);
+
+          // Adicionar as relações à consulta usando leftJoinAndSelect
+          queryBuilder.leftJoinAndSelect('candidate.curriculo', 'curriculo');
+
+          // Executar a consulta
+          const candidates = await queryBuilder.getMany();
+
+          queries.push(Promise.resolve(candidates));
         }
 
         if (query.minPretensaoSalarial && query.maxPretensaoSalarial) {
-          whereConditions.pretensao_salarial =
-            whereConditions.pretensao_salarial || {};
-          whereConditions.pretensao_salarial = Between(
-            Number(query.minPretensaoSalarial),
-            Number(query.maxPretensaoSalarial),
+          queries.push(
+            this.candidateRepository.find({
+              ...commonOptions,
+              where: {
+                pretensao_salarial: Between(
+                  Number(query.minPretensaoSalarial),
+                  Number(query.maxPretensaoSalarial),
+                ),
+                ...whereConditions, // Adicione outras condições, se houver
+              },
+            }),
           );
         }
 
         if (query.minPretensaoPJ && query.maxPretensaoPJ) {
-          whereConditions.pretensao_pj = whereConditions.pretensao_pj || {};
-          whereConditions.pretensao_pj = Between(
-            Number(query.minPretensaoPJ),
-            Number(query.maxPretensaoPJ),
+          queries.push(
+            this.candidateRepository.find({
+              ...commonOptions,
+              where: {
+                pretensao_pj: Between(
+                  Number(query.minPretensaoPJ),
+                  Number(query.maxPretensaoPJ),
+                ),
+                ...whereConditions, // Adicione outras condições, se houver
+              },
+            }),
+          );
+        }
+
+        if (queries.length === 0) {
+          // Se não houver parâmetros de pretensão salarial, PJ ou nível de inglês,
+          // adicione as outras condições à consulta principal.
+          for (const key in query) {
+            if (query.hasOwnProperty(key) && query[key]) {
+              if (key === 'minIdade') {
+                whereConditions.idade = whereConditions.idade || {};
+                whereConditions.idade['$gte'] = Number(query.minIdade);
+              } else if (key === 'maxIdade') {
+                whereConditions.idade = whereConditions.idade || {};
+                whereConditions.idade['$lte'] = Number(query.maxIdade);
+              } else {
+                whereConditions[key] = query[key];
+              }
+            }
+          }
+          queries.push(
+            this.candidateRepository.find({
+              ...commonOptions,
+              where: whereConditions,
+            }),
           );
         }
       }
 
-      return this.candidateRepository.find({
-        ...commonOptions,
-        where: whereConditions,
-      });
+      const results = await Promise.all(queries);
+      return results.reduce((acc, curr) => acc.concat(curr), []);
     } catch (error) {
+      console.error(
+        error.message || 'Erro interno no servidor',
+        error.stack || '',
+      );
       throw new HttpException(
         error.message || 'Erro interno no servidor',
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
