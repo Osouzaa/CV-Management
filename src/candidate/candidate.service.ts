@@ -8,7 +8,7 @@ import {
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Candidate } from 'src/database/entities/candidate.entity';
-import { Between, In, Repository  } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import * as path from 'path';
 import { promises as fsPromises } from 'fs';
 import { FilesService } from 'src/files/files.service';
@@ -70,7 +70,7 @@ export class CandidateService {
                   capitalizedRow['Contato ex:.(00) 0000-0000'].toString();
                 const telefoneFormatado = formatarTelefone(telefoneOriginal);
                 const cidade = capitalizedRow['Cidade que reside:'];
-                const uf = capitalizedRow['UF:'];
+                const uf = capitalizedRow['UF:'].toUpperCase();
                 const experiencia_ramo_automotivo =
                   capitalizedRow['Experiência no segmento automotivo:'];
                 const modalidade_atual = capitalizedRow['Modalidade Atual:'];
@@ -263,30 +263,55 @@ export class CandidateService {
       const queries: Promise<Candidate[]>[] = [];
 
       if (query) {
+        if (query && typeof query.uf === 'string') {
+          const ufSelected = query.uf.split(',').map((uf) => uf.trim());
+
+          const queryBuilder =
+            this.candidateRepository.createQueryBuilder('candidate');
+
+          const orConditions = ufSelected
+            .map((uf, index) => {
+              const paramName = `uf_${index}`;
+              queryBuilder.setParameter(paramName, uf);
+              return `candidate.uf = :${paramName}`;
+            })
+            .join(' Or ');
+            queryBuilder.where(`(${orConditions})`);
+            queryBuilder.leftJoinAndSelect('candidate.curriculo', 'curriculo')
+
+            const candidates = await queryBuilder.getMany();
+            queries.push(Promise.resolve(candidates))
+        }
+
         if (query && typeof query.conhecimento_ingles === 'string') {
-          const niveisDeIngles = query.conhecimento_ingles.split(',').map(nivel => nivel.trim());
-  
+          const niveisDeIngles = query.conhecimento_ingles
+            .split(',')
+            .map((nivel) => nivel.trim());
+
           // Usar createQueryBuilder para construir a consulta
-          const queryBuilder = this.candidateRepository.createQueryBuilder('candidate');
-  
+          const queryBuilder =
+            this.candidateRepository.createQueryBuilder('candidate');
+
           // Construir as condições OR manualmente
-          const orConditions = niveisDeIngles.map((level, index) => {
-            const paramName = `level_${index}`;
-            queryBuilder.setParameter(paramName, level); // Definir parâmetro
-            return `candidate.conhecimento_ingles = :${paramName}`;
-          }).join(' OR ');
-  
+          const orConditions = niveisDeIngles
+            .map((level, index) => {
+              const paramName = `level_${index}`;
+              queryBuilder.setParameter(paramName, level); // Definir parâmetro
+              return `candidate.conhecimento_ingles = :${paramName}`;
+            })
+            .join(' OR ');
+
           // Aplicar as condições OR à consulta
           queryBuilder.where(`(${orConditions})`);
-  
+
           // Adicionar as relações à consulta usando leftJoinAndSelect
           queryBuilder.leftJoinAndSelect('candidate.curriculo', 'curriculo');
-  
+
           // Executar a consulta
           const candidates = await queryBuilder.getMany();
-  
+
           queries.push(Promise.resolve(candidates));
-        } 
+        }
 
         if (query.minPretensaoSalarial && query.maxPretensaoSalarial) {
           queries.push(
@@ -343,7 +368,6 @@ export class CandidateService {
         }
       }
 
-      // Executar todas as consultas e combinar os resultados.
       const results = await Promise.all(queries);
       return results.reduce((acc, curr) => acc.concat(curr), []);
     } catch (error) {

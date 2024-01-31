@@ -14,7 +14,9 @@ export class QueryCandidateDto {
   vaga_hibrida_betim?: string;
   home_office?: string;
 
+  uf?: string;
   conhecimento_ingles?: string;
+  
   observacao?: string;
   cnpj?: string;
   esta_empregado?: string;
