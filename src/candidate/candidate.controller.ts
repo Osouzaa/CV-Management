@@ -144,4 +144,39 @@ export class CandidateController {
   ) {
     return this.candidateService.uploadSpreadsheet(file);
   }
+  @Get(':id/cv')
+  async getCv(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const candidate = await this.candidateService.findById(+id);
+
+      if (!candidate || !candidate.curriculo) {
+        throw new NotFoundException('Currículo do candidato não encontrado.');
+      }
+
+      const filePath = path.join(__dirname, '../../src/uploads', candidate.curriculo.fileName);
+
+      // Definir os cabeçalhos da resposta
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename=${path.basename(filePath)}`);
+
+      // Enviar o arquivo como resposta
+      const fileStream = fs.createReadStream(filePath);
+
+      // Lidar com possíveis erros durante o stream
+      fileStream.on('error', (error) => {
+        console.error('Erro durante o download do currículo:', error);
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ message: 'Erro interno no servidor durante o download do currículo.' });
+      });
+
+      fileStream.pipe(res);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        res.status(HttpStatus.NOT_FOUND).send({ message: error.message });
+      } else {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ message: 'Erro interno no servidor.' });
+      }
+    }
+  }
+
 }
+
