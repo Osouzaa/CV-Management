@@ -99,6 +99,9 @@ export class Candidate {
 
   @Column({ nullable: false, type: 'varchar' })
   vaga_100_presencial_betim_mg: string;
+  
+  @Column({ nullable: false, type: 'varchar' })
+  vaga_100_presencial_sao_paulo: string;
 
   @Column({ nullable: false, type: 'varchar' })
   vaga_internacional: string;

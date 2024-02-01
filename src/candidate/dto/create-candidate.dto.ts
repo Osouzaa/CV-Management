@@ -107,7 +107,13 @@ export class CreateCandidateDto {
   @IsString()
   vaga_100_presencial_betim_mg: string;
 
-  @IsNotEmpty({ message: 'O campo home office não pode estar vazio' })
+  @IsNotEmpty({
+    message: 'O campo vaga 100% presencial São Paulo SP não pode estar vazio',
+  })
+  @IsString()
+  vaga_100_presencial_sao_paulo: string;
+
+  @IsNotEmpty({ message: 'O campo vaga internacional não pode estar vazio' })
   @IsString()
   vaga_internacional: string;
 
