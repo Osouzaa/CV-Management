@@ -136,6 +136,7 @@ export class CandidateService {
                   cnpj,
                   tipo_cnpj,
                   vaga_100_presencial_betim_mg,
+                  vaga_100_presencial_sao_paulo: "",
                   vaga_100_presencial_porto_real_rj,
                   vaga_100_presencial_goiana_pe,
                   home_office,
@@ -226,6 +227,7 @@ export class CandidateService {
         throw new BadRequestException('Arquivo muito grande');
       }
 
+
       const fileName = `${createCandidateDto.profissional
         .replace(/\s/g, '_')
         .toLowerCase()}_${codigoCandidate}.pdf`;
@@ -263,56 +265,39 @@ export class CandidateService {
       const queries: Promise<Candidate[]>[] = [];
 
       if (query) {
-        if (query && typeof query.uf === 'string') {
+        // Verifica e adiciona a consulta de UF
+        if (query.uf && typeof query.uf === 'string') {
           const ufSelected = query.uf.split(',').map((uf) => uf.trim());
-
-          const queryBuilder =
-            this.candidateRepository.createQueryBuilder('candidate');
-
-          const orConditions = ufSelected
-            .map((uf, index) => {
-              const paramName = `uf_${index}`;
-              queryBuilder.setParameter(paramName, uf);
-              return `candidate.uf = :${paramName}`;
-            })
-            .join(' Or ');
-            queryBuilder.where(`(${orConditions})`);
-            queryBuilder.leftJoinAndSelect('candidate.curriculo', 'curriculo')
-
-            const candidates = await queryBuilder.getMany();
-            queries.push(Promise.resolve(candidates))
-        }
-
-        if (query && typeof query.conhecimento_ingles === 'string') {
-          const niveisDeIngles = query.conhecimento_ingles
-            .split(',')
-            .map((nivel) => nivel.trim());
-
-          // Usar createQueryBuilder para construir a consulta
-          const queryBuilder =
-            this.candidateRepository.createQueryBuilder('candidate');
-
-          // Construir as condições OR manualmente
-          const orConditions = niveisDeIngles
-            .map((level, index) => {
-              const paramName = `level_${index}`;
-              queryBuilder.setParameter(paramName, level); // Definir parâmetro
-              return `candidate.conhecimento_ingles = :${paramName}`;
-            })
-            .join(' OR ');
-
-          // Aplicar as condições OR à consulta
+          const queryBuilder = this.candidateRepository.createQueryBuilder('candidate');
+          const orConditions = ufSelected.map((uf, index) => {
+            const paramName = `uf_${index}`;
+            queryBuilder.setParameter(paramName, uf);
+            return `candidate.uf = :${paramName}`;
+          }).join(' OR ');
+  
           queryBuilder.where(`(${orConditions})`);
-
-          // Adicionar as relações à consulta usando leftJoinAndSelect
           queryBuilder.leftJoinAndSelect('candidate.curriculo', 'curriculo');
-
-          // Executar a consulta
-          const candidates = await queryBuilder.getMany();
-
-          queries.push(Promise.resolve(candidates));
+          queryBuilder.distinct(true);
+          queries.push(queryBuilder.getMany());
         }
-
+  
+        // Verifica e adiciona a consulta de conhecimento de inglês
+        if (query.conhecimento_ingles && typeof query.conhecimento_ingles === 'string') {
+          const niveisDeIngles = query.conhecimento_ingles.split(',').map((nivel) => nivel.trim());
+          const queryBuilder = this.candidateRepository.createQueryBuilder('candidate');
+          const orConditions = niveisDeIngles.map((level, index) => {
+            const paramName = `level_${index}`;
+            queryBuilder.setParameter(paramName, level);
+            return `candidate.conhecimento_ingles = :${paramName}`;
+          }).join(' OR ');
+  
+          queryBuilder.where(`(${orConditions})`);
+          queryBuilder.leftJoinAndSelect('candidate.curriculo', 'curriculo');
+          queryBuilder.distinct(true);
+          queries.push(queryBuilder.getMany());
+        }
+  
+        // Verifica e adiciona as consultas de pretensão salarial
         if (query.minPretensaoSalarial && query.maxPretensaoSalarial) {
           queries.push(
             this.candidateRepository.find({
@@ -322,12 +307,13 @@ export class CandidateService {
                   Number(query.minPretensaoSalarial),
                   Number(query.maxPretensaoSalarial),
                 ),
-                ...whereConditions, // Adicione outras condições, se houver
+                ...whereConditions,
               },
             }),
           );
         }
-
+  
+        // Verifica e adiciona as consultas de pretensão PJ
         if (query.minPretensaoPJ && query.maxPretensaoPJ) {
           queries.push(
             this.candidateRepository.find({
@@ -337,15 +323,14 @@ export class CandidateService {
                   Number(query.minPretensaoPJ),
                   Number(query.maxPretensaoPJ),
                 ),
-                ...whereConditions, // Adicione outras condições, se houver
+                ...whereConditions,
               },
             }),
           );
         }
-
+  
+        // Se não houver outras consultas, adiciona a consulta com as condições
         if (queries.length === 0) {
-          // Se não houver parâmetros de pretensão salarial, PJ ou nível de inglês,
-          // adicione as outras condições à consulta principal.
           for (const key in query) {
             if (query.hasOwnProperty(key) && query[key]) {
               if (key === 'minIdade') {
@@ -367,16 +352,24 @@ export class CandidateService {
           );
         }
       }
-
+  
+      // Aguarde todas as consultas serem resolvidas
       const results = await Promise.all(queries);
-      return results.reduce((acc, curr) => acc.concat(curr), []);
+  
+      // Combine os resultados e remova duplicatas
+      const combinedResults = results.reduce((acc, curr) => acc.concat(curr), []);
+      const uniqueResults = Array.from(new Set(combinedResults.map(candidate => candidate.id)))
+        .map(candidateId => combinedResults.find(candidate => candidate.id === candidateId));
+  
+      // Retorne os resultados únicos
+      return uniqueResults;
     } catch (error) {
       console.error(
-        error.message || 'Erro interno no servidor',
+        error.message || 'Internal server error',
         error.stack || '',
       );
       throw new HttpException(
-        error.message || 'Erro interno no servidor',
+        error.message || 'Internal server error',
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
