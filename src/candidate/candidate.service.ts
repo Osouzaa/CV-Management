@@ -8,7 +8,7 @@ import {
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Candidate } from 'src/database/entities/candidate.entity';
-import { Between, In, Repository } from 'typeorm';
+import { Between, In, Not, Repository } from 'typeorm';
 import * as path from 'path';
 import { promises as fsPromises } from 'fs';
 import { FilesService } from 'src/files/files.service';
@@ -136,7 +136,7 @@ export class CandidateService {
                   cnpj,
                   tipo_cnpj,
                   vaga_100_presencial_betim_mg,
-                  vaga_100_presencial_sao_paulo: "",
+                  vaga_100_presencial_sao_paulo: '',
                   vaga_100_presencial_porto_real_rj,
                   vaga_100_presencial_goiana_pe,
                   home_office,
@@ -227,7 +227,6 @@ export class CandidateService {
         throw new BadRequestException('Arquivo muito grande');
       }
 
-
       const fileName = `${createCandidateDto.profissional
         .replace(/\s/g, '_')
         .toLowerCase()}_${codigoCandidate}.pdf`;
@@ -267,36 +266,28 @@ export class CandidateService {
       if (query) {
         // Verifica e adiciona a consulta de UF
         if (query.uf && typeof query.uf === 'string') {
-          const ufSelected = query.uf.split(',').map((uf) => uf.trim());
-          const queryBuilder = this.candidateRepository.createQueryBuilder('candidate');
-          const orConditions = ufSelected.map((uf, index) => {
-            const paramName = `uf_${index}`;
-            queryBuilder.setParameter(paramName, uf);
-            return `candidate.uf = :${paramName}`;
-          }).join(' OR ');
-  
-          queryBuilder.where(`(${orConditions})`);
-          queryBuilder.leftJoinAndSelect('candidate.curriculo', 'curriculo');
-          queryBuilder.distinct(true);
-          queries.push(queryBuilder.getMany());
+          if (query.uf.toLowerCase() === 'outros') {
+            whereConditions.uf = Not(In(['SP', 'MG', 'RJ', 'PE']));
+          } else {
+            const ufSelected = query.uf.split(',').map((uf) => uf.trim());
+            whereConditions.uf = In(ufSelected);
+          }
         }
-  
+
         // Verifica e adiciona a consulta de conhecimento de inglês
-        if (query.conhecimento_ingles && typeof query.conhecimento_ingles === 'string') {
-          const niveisDeIngles = query.conhecimento_ingles.split(',').map((nivel) => nivel.trim());
-          const queryBuilder = this.candidateRepository.createQueryBuilder('candidate');
-          const orConditions = niveisDeIngles.map((level, index) => {
-            const paramName = `level_${index}`;
-            queryBuilder.setParameter(paramName, level);
-            return `candidate.conhecimento_ingles = :${paramName}`;
-          }).join(' OR ');
-  
-          queryBuilder.where(`(${orConditions})`);
-          queryBuilder.leftJoinAndSelect('candidate.curriculo', 'curriculo');
-          queryBuilder.distinct(true);
-          queries.push(queryBuilder.getMany());
+        if (query) {
+          // Verifica e adiciona a consulta de conhecimento de inglês como eliminatória
+          if (
+            query.conhecimento_ingles &&
+            typeof query.conhecimento_ingles === 'string'
+          ) {
+            const niveisDeIngles = query.conhecimento_ingles
+              .split(',')
+              .map((nivel) => nivel.trim());
+            whereConditions.conhecimento_ingles = In(niveisDeIngles);
+          }
         }
-  
+
         // Verifica e adiciona as consultas de pretensão salarial
         if (query.minPretensaoSalarial && query.maxPretensaoSalarial) {
           queries.push(
@@ -312,7 +303,7 @@ export class CandidateService {
             }),
           );
         }
-  
+
         // Verifica e adiciona as consultas de pretensão PJ
         if (query.minPretensaoPJ && query.maxPretensaoPJ) {
           queries.push(
@@ -328,7 +319,7 @@ export class CandidateService {
             }),
           );
         }
-  
+
         // Se não houver outras consultas, adiciona a consulta com as condições
         if (queries.length === 0) {
           for (const key in query) {
@@ -352,15 +343,21 @@ export class CandidateService {
           );
         }
       }
-  
+
       // Aguarde todas as consultas serem resolvidas
       const results = await Promise.all(queries);
-  
+
       // Combine os resultados e remova duplicatas
-      const combinedResults = results.reduce((acc, curr) => acc.concat(curr), []);
-      const uniqueResults = Array.from(new Set(combinedResults.map(candidate => candidate.id)))
-        .map(candidateId => combinedResults.find(candidate => candidate.id === candidateId));
-  
+      const combinedResults = results.reduce(
+        (acc, curr) => acc.concat(curr),
+        [],
+      );
+      const uniqueResults = Array.from(
+        new Set(combinedResults.map((candidate) => candidate.id)),
+      ).map((candidateId) =>
+        combinedResults.find((candidate) => candidate.id === candidateId),
+      );
+
       // Retorne os resultados únicos
       return uniqueResults;
     } catch (error) {
