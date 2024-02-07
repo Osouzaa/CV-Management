@@ -263,6 +263,11 @@ export class CandidateService {
       let whereConditions: any = {};
       const queries: Promise<Candidate[]>[] = [];
 
+      if (query.foi_avaliado_recrutamento) {
+        whereConditions.foi_avaliado_recrutamento = query.foi_avaliado_recrutamento;
+    }
+
+
       if (query) {
         // Verifica e adiciona a consulta de UF
         if (query.uf && typeof query.uf === 'string') {
@@ -277,27 +282,26 @@ export class CandidateService {
         if (query) {
           // Verifica e adiciona a consulta de nivel_funcao
           if (query.nivel_funcao && typeof query.nivel_funcao === 'string') {
-              const nivelFuncao = query.nivel_funcao.toLowerCase();
-              if (nivelFuncao === 'júnior') {
-                  // Se for junior, busca junior, senior e pleno
-                  whereConditions.nivel_funcao = In(['Júnior', 'Senior', 'Pleno']);
-              } else if (nivelFuncao === 'pleno') {
-                  // Se for senior, busca senior e pleno
-                  whereConditions.nivel_funcao = In(['Senior', 'Pleno']);
-              } else if (nivelFuncao === 'senior') {
-                  // Se for pleno, busca apenas pleno
-                  whereConditions.nivel_funcao = 'Senior';
-              }
+            const nivelFuncao = query.nivel_funcao.toLowerCase();
+            if (nivelFuncao === 'júnior') {
+              // Se for junior, busca junior, senior e pleno
+              whereConditions.nivel_funcao = In(['Júnior', 'Senior', 'Pleno']);
+            } else if (nivelFuncao === 'pleno') {
+              // Se for senior, busca senior e pleno
+              whereConditions.nivel_funcao = In(['Senior', 'Pleno']);
+            } else if (nivelFuncao === 'senior') {
+              // Se for pleno, busca apenas pleno
+              whereConditions.nivel_funcao = 'Senior';
+            }
           }
           queries.push(
-              this.candidateRepository.find({
-                  ...commonOptions,
-                  where: whereConditions,
-              }),
+            this.candidateRepository.find({
+              ...commonOptions,
+              where: whereConditions,
+            }),
           );
-      }
+        }
 
-        
         if (query) {
           if (
             query.conhecimento_ingles &&
