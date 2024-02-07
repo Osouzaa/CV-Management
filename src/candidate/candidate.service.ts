@@ -281,12 +281,12 @@ export class CandidateService {
               if (nivelFuncao === 'júnior') {
                   // Se for junior, busca junior, senior e pleno
                   whereConditions.nivel_funcao = In(['Júnior', 'Senior', 'Pleno']);
-              } else if (nivelFuncao === 'senior') {
+              } else if (nivelFuncao === 'pleno') {
                   // Se for senior, busca senior e pleno
                   whereConditions.nivel_funcao = In(['Senior', 'Pleno']);
-              } else if (nivelFuncao === 'pleno') {
+              } else if (nivelFuncao === 'senior') {
                   // Se for pleno, busca apenas pleno
-                  whereConditions.nivel_funcao = 'Pleno';
+                  whereConditions.nivel_funcao = 'Senior';
               }
           }
           queries.push(
