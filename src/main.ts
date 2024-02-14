@@ -25,8 +25,6 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
-  app.use(cors());
-
   await app.listen(configService.get('APP_PORT'));
 }
 bootstrap();
