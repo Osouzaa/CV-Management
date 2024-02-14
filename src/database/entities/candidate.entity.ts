@@ -68,6 +68,20 @@ export class Candidate {
   @Column({nullable: false, type: 'varchar'})
   interesse_imediato: string;
 
+  // -- Idiomas
+
+  @Column({ nullable: true, type: 'varchar' })
+  conhecimento_ingles: string;
+
+  @Column({ nullable: true, type: 'varchar' })
+  conhecimento_frances: string;
+
+  @Column({ nullable: true, type: 'varchar' })
+  conhecimento_italiano: string;
+
+  @Column({ nullable: true, type: 'varchar' })
+  conhecimento_espanhol: string;
+
   //  --
 
   @Column({nullable: false, type: 'varchar'})
@@ -75,9 +89,6 @@ export class Candidate {
 
   @Column({nullable: false, type: 'varchar'})
   teste_tecnico: string;
-
-  @Column({ nullable: false, type: 'varchar' })
-  conhecimento_ingles: string;
 
   @Column({ nullable: false,  })
   pretensao_salarial: number;

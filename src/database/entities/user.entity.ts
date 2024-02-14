@@ -1,6 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { RoleEnum } from 'src/enums/role.enum.';
+import { RoleEnum } from '../../enums/role.enum';
 import {
   BeforeInsert,
   BeforeUpdate,

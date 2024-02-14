@@ -85,7 +85,6 @@ export class CreateCandidateDto {
   @IsString()
   cnpj: string;
 
-  @IsNotEmpty({ message: 'O campo de Tipo CNPJ não pode estar vazio' })
   @IsString()
   tipo_cnpj: string;
 
