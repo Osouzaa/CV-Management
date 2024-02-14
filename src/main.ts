@@ -26,6 +26,6 @@ async function bootstrap() {
 
   app.use(cors());
 
-  await app.listen(configService.get('APP_PORT') || 3003);
+  await app.listen(configService.get('APP_PORT') || 3003, '0.0.0.0');
 }
 bootstrap();
