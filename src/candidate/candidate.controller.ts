@@ -10,6 +10,7 @@ import {
   ParseFilePipeBuilder,
   HttpStatus,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { CandidateService } from './candidate.service';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
@@ -40,6 +41,7 @@ export class CandidateController {
     @Body()
     createCandidateDto: CreateCandidateDto,
   ) {
+    console.log(createCandidateDto.data_de_nascimento)
     return this.candidateService.create(createCandidateDto, curriculo);
   }
 
@@ -192,5 +194,10 @@ export class CandidateController {
   @Post('/ping')
   async Ping() {
     return 'a';
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: number) {
+    return this.candidateService.remove(id);
   }
 }

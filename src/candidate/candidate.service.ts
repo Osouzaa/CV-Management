@@ -192,9 +192,10 @@ export class CandidateService {
             createCandidateDto,
             codigoCandidate,
           )
-        : null; // Caso 'curriculo' seja indefinido, 'file' também será nulo
+        : null; 
 
       const resultAge = calcularIdade(createCandidateDto.data_de_nascimento);
+      console.log("Idade ", resultAge)
 
       const tempCandidate = this.candidateRepository.create({
         ...createCandidateDto,
@@ -208,6 +209,7 @@ export class CandidateService {
 
       return candidate;
     } catch (error) {
+      console.log(error.message)
       throw new HttpException(
         error.message || 'Erro interno no servidor',
         error.statusCode || 500,
@@ -264,9 +266,9 @@ export class CandidateService {
       const queries: Promise<Candidate[]>[] = [];
 
       if (query.foi_avaliado_recrutamento) {
-        whereConditions.foi_avaliado_recrutamento = query.foi_avaliado_recrutamento;
-    }
-
+        whereConditions.foi_avaliado_recrutamento =
+          query.foi_avaliado_recrutamento;
+      }
 
       if (query) {
         // Verifica e adiciona a consulta de UF
@@ -471,7 +473,22 @@ export class CandidateService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} candidate`;
+  async remove(id: number) {
+    try {
+      const candidate = await this.findById(id);
+      if (!candidate) {
+        throw new HttpException('Candidate não encontrado', 404);
+      }
+      await this.candidateRepository.delete({ id });
+
+      return {
+        message: "Candidato removido com sucesso!"
+      }
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Internal server error',
+        error.status || 500,
+      );
+    }
   }
 }
