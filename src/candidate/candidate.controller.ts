@@ -41,7 +41,6 @@ export class CandidateController {
     @Body()
     createCandidateDto: CreateCandidateDto,
   ) {
-    console.log(createCandidateDto.data_de_nascimento)
     return this.candidateService.create(createCandidateDto, curriculo);
   }
 

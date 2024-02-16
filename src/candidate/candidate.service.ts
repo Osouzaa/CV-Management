@@ -195,7 +195,6 @@ export class CandidateService {
         : null; 
 
       const resultAge = calcularIdade(createCandidateDto.data_de_nascimento);
-      console.log("Idade ", resultAge)
 
       const tempCandidate = this.candidateRepository.create({
         ...createCandidateDto,
