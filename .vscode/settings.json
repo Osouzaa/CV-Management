@@ -73,7 +73,7 @@
   "terminal.integrated.fontSize": 14,
   "terminal.integrated.fontFamily": "monospace",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": true
   },
   "eslint.validate": [
     "javascript",
