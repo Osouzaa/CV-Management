@@ -41,31 +41,30 @@ export class Candidate {
   @Column({ nullable: false, type: 'varchar' })
   email: string;
 
-  //  Page  
-
+  //  Page
 
   @Column({ nullable: false, type: 'varchar' })
   esta_empregado: string;
 
-  @Column({nullable: true, type: 'varchar'})
+  @Column({ nullable: true, type: 'varchar' })
   empresa_atual: string;
 
-  @Column({nullable: false, type: 'varchar'})
+  @Column({ nullable: false, type: 'varchar' })
   experiencia_ramo_automotivo: string;
 
-  @Column({nullable: false, type: 'varchar'})
+  @Column({ nullable: false, type: 'varchar' })
   modalidade_atual: string;
 
-  @Column({nullable: false, type: 'varchar'})
+  @Column({ nullable: false, type: 'varchar' })
   tipo_desejado_linkedin: string;
 
-  @Column({nullable: false, type: 'varchar'})
+  @Column({ nullable: false, type: 'varchar' })
   nivel_funcao: string;
 
-  @Column({nullable: false, type: 'varchar'})
+  @Column({ nullable: false, type: 'varchar' })
   formacao: string;
 
-  @Column({nullable: false, type: 'varchar'})
+  @Column({ nullable: false, type: 'varchar' })
   interesse_imediato: string;
 
   // -- Idiomas
@@ -84,16 +83,16 @@ export class Candidate {
 
   //  --
 
-  @Column({nullable: false, type: 'varchar'})
+  @Column({ nullable: false, type: 'varchar' })
   entrevista_online: string;
 
-  @Column({nullable: false, type: 'varchar'})
+  @Column({ nullable: false, type: 'varchar' })
   teste_tecnico: string;
 
-  @Column({ nullable: false,  })
+  @Column({ nullable: false })
   pretensao_salarial: number;
 
-  @Column({ nullable: false, })
+  @Column({ nullable: false })
   pretensao_pj: number;
 
   @Column({ nullable: false, type: 'varchar' })
@@ -110,7 +109,7 @@ export class Candidate {
 
   @Column({ nullable: false, type: 'varchar' })
   vaga_100_presencial_betim_mg: string;
-  
+
   @Column({ nullable: false, type: 'varchar' })
   vaga_100_presencial_sao_paulo: string;
 
@@ -133,9 +132,22 @@ export class Candidate {
   @JoinColumn()
   curriculo: File;
 
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
+  experiencias: Experiencia[];
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+}
+
+interface Experiencia {
+  empresa: string;
+  cargo: string;
+  atividades: string;
+  periodo_inicial: string;
+  periodo_final?: string;
+  esta_atualmente?: boolean;
+  
 }
