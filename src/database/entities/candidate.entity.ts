@@ -135,6 +135,9 @@ export class Candidate {
   @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
   experiencias: Experiencia[];
 
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
+  formacoes: formacoes[];
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -150,4 +153,13 @@ interface Experiencia {
   periodo_final?: string;
   esta_atualmente?: boolean;
   
+}
+
+interface formacoes {
+  escolidade: string;
+  status: string;
+  instituição: string;
+  inicio: string;
+  termino_previsao: string;
+  curso: string;
 }
