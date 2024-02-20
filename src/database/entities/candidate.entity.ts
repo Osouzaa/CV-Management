@@ -156,7 +156,7 @@ interface Experiencia {
 }
 
 interface formacoes {
-  escolidade: string;
+  escolaridade: string;
   status: string;
   instituição: string;
   inicio: string;
