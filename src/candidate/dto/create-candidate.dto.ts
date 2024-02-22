@@ -1,4 +1,4 @@
-import {IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCandidateDto {
   @IsNotEmpty({ message: 'O campo profissional não pode estar vazio' })
@@ -9,6 +9,12 @@ export class CreateCandidateDto {
   @IsString()
   data_de_nascimento: string;
 
+  @IsNotEmpty({ message: 'O campo de Gênero não pode estar vazio' })
+  @IsString()
+  genero: string;
+
+  @IsOptional()
+  resumoProfissional: string;
 
   @IsNotEmpty({ message: 'O campo de CPF não pode estar vazio' })
   @IsString()
@@ -30,7 +36,7 @@ export class CreateCandidateDto {
   @IsString()
   email: string;
 
-  // Content 
+  // Content
   @IsNotEmpty({ message: 'O campo Está Empregado não pode estar vazio' })
   @IsString()
   esta_empregado: string;
@@ -38,7 +44,9 @@ export class CreateCandidateDto {
   @IsOptional()
   empresa_atual: string;
 
-  @IsNotEmpty({ message: 'O campo Experiencia no ramo automotivo não pode estar vazio' })
+  @IsNotEmpty({
+    message: 'O campo Experiencia no ramo automotivo não pode estar vazio',
+  })
   @IsString()
   experiencia_ramo_automotivo: string;
 
@@ -62,7 +70,6 @@ export class CreateCandidateDto {
   @IsString()
   interesse_imediato: string;
 
-
   @IsNotEmpty({ message: 'O campo de Entrevista Online não pode estar vazio' })
   @IsString()
   entrevista_online: string;
@@ -71,7 +78,9 @@ export class CreateCandidateDto {
   @IsString()
   teste_tecnico: string;
 
-  @IsNotEmpty({ message: 'O campo de Conhecimento em inglês não pode estar vazio' })
+  @IsNotEmpty({
+    message: 'O campo de Conhecimento em inglês não pode estar vazio',
+  })
   @IsString()
   conhecimento_ingles: string;
 
