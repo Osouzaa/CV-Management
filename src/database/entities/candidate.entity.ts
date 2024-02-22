@@ -41,6 +41,12 @@ export class Candidate {
   @Column({ nullable: false, type: 'varchar' })
   email: string;
 
+  @Column({ nullable: false, type: 'varchar' })
+  genero: string;
+
+  @Column({nullable: true, type: 'varchar' })
+  resumoProfissional: string;
+
   //  Page
 
   @Column({ nullable: false, type: 'varchar' })
@@ -152,7 +158,6 @@ interface Experiencia {
   periodo_inicial: string;
   periodo_final?: string;
   esta_atualmente?: boolean;
-  
 }
 
 interface formacoes {
