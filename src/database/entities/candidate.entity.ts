@@ -44,7 +44,7 @@ export class Candidate {
   @Column({ nullable: false, type: 'varchar' })
   genero: string;
 
-  @Column({nullable: true, type: 'varchar' })
+  @Column({ nullable: true, type: 'varchar' })
   resumoProfissional: string;
 
   //  Page
@@ -144,6 +144,9 @@ export class Candidate {
   @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
   formacoes: formacoes[];
 
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
+  software: Software[];
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -151,6 +154,10 @@ export class Candidate {
   updatedAt: Date;
 }
 
+interface Software {
+  software: string;
+  nivel: string;
+}
 interface Experiencia {
   empresa: string;
   cargo: string;
