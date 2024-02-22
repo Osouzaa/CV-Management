@@ -144,6 +144,8 @@ export class CandidateService {
                   observacao,
                   esta_empregado,
                   vaga_hibrida_betim,
+                  genero: '',
+                  resumoProfissional: ''
                 };
                 const candidate = await this.create(candidateData);
                 return { candidate, success: true };
@@ -188,7 +190,7 @@ export class CandidateService {
       const file = curriculo
         ? await this.uploadCv(
             curriculo,
-            curriculo.buffer, // Acesse 'buffer' somente se 'curriculo' estiver definido
+            curriculo.buffer, 
             createCandidateDto,
             codigoCandidate,
           )
@@ -198,7 +200,7 @@ export class CandidateService {
 
       const tempCandidate = this.candidateRepository.create({
         ...createCandidateDto,
-        curriculo: file, // Atribui 'file' como curriculo se 'file' não for nulo
+        curriculo: file, 
         idade: resultAge,
         codigoCandidate,
         observacao: observacaoDate,
