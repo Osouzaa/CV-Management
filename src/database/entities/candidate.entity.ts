@@ -1,3 +1,5 @@
+import { Atividades } from './../../types/atividadades.types';
+import { Software } from '../../types/softwares.types';
 import { File } from '../../database/entities/file.entity';
 import {
   Entity,
@@ -8,6 +10,9 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
+import { Experiencia } from '../../types/experiencias.types';
+import { Formacoes } from '../../types/formacoes.types';
+import { Cursos } from '../../types/cursos.types';
 
 @Entity('candidates')
 export class Candidate {
@@ -142,36 +147,21 @@ export class Candidate {
   experiencias: Experiencia[];
 
   @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
-  formacoes: formacoes[];
+  formacoes: Formacoes[];
 
   @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
   software: Software[];
+
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
+  cursos: Cursos[]
+
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
+  Atividades: Atividades[]
+
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-}
-
-interface Software {
-  software: string;
-  nivel: string;
-}
-interface Experiencia {
-  empresa: string;
-  cargo: string;
-  atividades: string;
-  periodo_inicial: string;
-  periodo_final?: string;
-  esta_atualmente?: boolean;
-}
-
-interface formacoes {
-  escolaridade: string;
-  status: string;
-  instituição: string;
-  inicio: string;
-  termino_previsao: string;
-  curso: string;
 }

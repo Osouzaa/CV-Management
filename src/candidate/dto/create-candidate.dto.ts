@@ -83,6 +83,13 @@ export class CreateCandidateDto {
   })
   @IsString()
   conhecimento_ingles: string;
+  
+  @IsString()
+  conhecimento_frances: string;
+  @IsString()
+  conhecimento_italiano: string;
+  @IsString()
+  conhecimento_espanhol: string;
 
   @IsNotEmpty({ message: 'O campo de pretensão salarial não pode estar vazio' })
   pretensao_salarial: number;
@@ -138,4 +145,5 @@ export class CreateCandidateDto {
 
   @IsOptional()
   foi_avaliado_recrutamento?: boolean;
+
 }

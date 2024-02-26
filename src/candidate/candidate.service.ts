@@ -145,7 +145,10 @@ export class CandidateService {
                   esta_empregado,
                   vaga_hibrida_betim,
                   genero: '',
-                  resumoProfissional: ''
+                  resumoProfissional: '',
+                  conhecimento_frances: '',
+                  conhecimento_italiano: '',
+                  conhecimento_espanhol: ''
                 };
                 const candidate = await this.create(candidateData);
                 return { candidate, success: true };
