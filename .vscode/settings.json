@@ -73,7 +73,7 @@
   "terminal.integrated.fontSize": 14,
   "terminal.integrated.fontFamily": "monospace",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
   "eslint.validate": [
     "javascript",
@@ -115,8 +115,6 @@
   "console-ninja.featureSet": "Community",
   "workbench.editor.empty.hint": "hidden",
   "update.showReleaseNotes": false,
-  "security.promptForLocalFileProtocolHandling": false,
-  "workbench.activityBar.location": "hidden",
   "apc.activityBar": {
     "position": "bottom",
     "hideSettings": true,
