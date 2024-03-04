@@ -37,6 +37,10 @@ export class AuthService {
     try {
       const user = await this.usersService.findByRegistration(payload.registration);
 
+      if (!user.isActive) {
+        throw new HttpException('Usuario esta desativado', 400);
+      }
+
       if (!user) {
         throw new HttpException('E-mail ou senha invalida.', 401);
       }
