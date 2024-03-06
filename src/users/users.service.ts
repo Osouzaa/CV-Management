@@ -45,17 +45,26 @@ export class UsersService {
   async findAll() {
     try {
       return await this.usersRepository.find({
-        select: ['id', 'name', 'email', 'role', 'createdAt', 'registration', 'isActive',"password" ],
+        select: [
+          'id',
+          'name',
+          'email',
+          'role',
+          'createdAt',
+          'registration',
+          'isActive',
+          'password',
+        ],
       });
     } catch (error) {
-      console.log("error ", error)
+      console.log('error ', error);
       throw new Error('Erro ao buscar usuários');
     }
   }
 
   async findOne(id: number) {
     try {
-      const user = await this.usersRepository.findOneBy({ id});
+      const user = await this.usersRepository.findOneBy({ id });
       if (!user) {
         throw new NotFoundException(`Usuário com ID #${id} não encontrado`);
       }
