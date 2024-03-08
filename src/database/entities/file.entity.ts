@@ -5,6 +5,7 @@ export class File {
   @PrimaryGeneratedColumn()
   id: number;
 
+  
   @Column({ type: 'varchar' })
   fileName: string;
 
